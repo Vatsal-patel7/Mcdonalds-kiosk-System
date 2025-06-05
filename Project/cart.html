@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>McDonald's Cart</title>
+    <link rel="stylesheet" href="cart.css">
+</head>
+<body>
+    <div class="main-container">
+        <header>
+            <div class="logo">
+                <img src="mcdonalds-logo.svg" alt="McDonald's Logo">
+                <a href="menu.html" class="back-button">Back to Menu</a>
+            </div>
+        </header>
+
+        <div class="cart-container">
+            <h1>Your Cart</h1>
+            <div id="cart-items"></div>
+            <div class="cart-summary">
+                <div class="total">
+                    <span>Total:</span>
+                    <span id="total-amount">₹0</span>
+                </div>
+                <button id="checkout-button" class="checkout-button">Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cart = {};
+
+        let cartString = localStorage.getItem('cart');
+        if (cartString) {
+            let items = cartString.split(';');
+            for (let i = 0; i < items.length; i++) {
+                if (items[i]) {
+                    let parts = items[i].split('|');
+                    let quantity = Number(parts[1]);
+                    if (!isNaN(quantity)) {
+                        cart[parts[0]] = {
+                            quantity: quantity,
+                            price: parts[2]
+                        };
+                    }
+                }
+            }
+        }
+
+        let cartItemsContainer = document.getElementById('cart-items');
+        let totalAmountElement = document.getElementById('total-amount');
+        let totalAmount = 0;
+
+        let itemCount = 0;
+        for (let item in cart) {
+            itemCount = itemCount + 1;
+        }
+
+        if (itemCount === 0) {
+            cartItemsContainer.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
+        } else {
+            for (let itemName in cart) {
+                let item = cart[itemName];
+                
+                let price = Number(item.price.replace('₹', ''));
+                if (isNaN(price)) {
+                    price = 0;
+                }
+                let itemTotal = price * item.quantity;
+                totalAmount = totalAmount + itemTotal;
+
+                let itemElement = document.createElement('div');
+                itemElement.className = 'cart-item';
+                
+                itemElement.innerHTML =
+                    '<div class="item-details">' +
+                        '<h3>' + itemName + '</h3>' +
+                        '<p>Price: ' + item.price + '</p>' +
+                    '</div>' +
+                    '<div class="item-quantity">' +
+                        '<span>Quantity: ' + item.quantity + '</span>' +
+                    '</div>' +
+                    '<div class="item-total">' +
+                        '<span>Total: ₹' + itemTotal + '</span>' +
+                    '</div>' +
+                    '<button onclick="removeItem(\'' + itemName + '\')" class="remove-item">Remove</button>';
+                
+                cartItemsContainer.appendChild(itemElement);
+            }
+        }
+
+        totalAmountElement.textContent = '₹' + totalAmount;
+
+        function removeItem(itemName) {
+            delete cart[itemName];
+            
+            let cartString = '';
+            for (let name in cart) {
+                let quantity = Number(cart[name].quantity);
+                if (!isNaN(quantity)) {
+                    cartString += name + '|' + quantity + '|' + cart[name].price + ';';
+                }
+            }
+            localStorage.setItem('cart', cartString);
+            
+            location.reload();
+        }
+
+        document.getElementById('checkout-button').onclick = function() {
+            if (itemCount === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            
+            alert('Thank you for your order!');
+            
+            localStorage.removeItem('cart');
+            
+            window.location.href = 'menu.html';
+        };
+    </script>
+</body>
+</html> 
